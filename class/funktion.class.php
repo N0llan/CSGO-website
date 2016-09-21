@@ -150,7 +150,7 @@ class FunktionClass{
 	public function footer()		//Skriver ut footer
 	{
 		
-		if ($dbconn->connectDB())		//Skapa en connection och kolla så den lyckats
+		if ($dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{
 			$query = "SELECT COUNT(epost) FROM projekt.medlem";	//kolla antalet medlemmar
 			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
@@ -161,7 +161,6 @@ class FunktionClass{
 		}
 		pg_free_result($result);
 		$dbConn->disconnectDB();		//Rensar och stänger
-		$members=2;
 		//Funktion som sätter source på bilden  beroende på antalet
 		if ($members>85)
 		{
