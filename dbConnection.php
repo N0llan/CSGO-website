@@ -10,6 +10,7 @@ class dbConn{
 
 	public function connectDB(){
 		$dbConnected=pg_connect('host=$dbHost port=$dbPort dbname=$dbName user=$dbUser password=$password');
+		echo "$dbConnected";
 		return $dbConnected;
 	}
 
@@ -21,7 +22,7 @@ class dbConn{
 	}
 
 	public function queryDB($query){
-		return pg_query($dbConn);
+		return pg_query($dbConnected, $query);
 	}
 
 }
