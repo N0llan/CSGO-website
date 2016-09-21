@@ -6,6 +6,9 @@
  * 2016-03-05
  * Filen hanterar funktioner från alla andra filer. Detta för att slippa dubbel kod.
  */
+require_once ('../dbConnection.php');
+$dbConn = new dbConn;
+$dbConn->test();
 date_default_timezone_set("Europe/Stockholm");	//Sätter timezone
 //SKapat et klass för att hålla alla funktioner
 class FunktionClass{	
@@ -23,8 +26,7 @@ class FunktionClass{
 	public function connectDatabase($epost, $password)	//Anslut till databas och kontrollera inmatade värden
 	{
 		$count = 0;
-		$dbconn = pg_connect('host=webblabb.miun.se port=5432 dbname=daje1400 user=daje1400 password=QPm0nLg0r');
-		if ($dbconn)		//Skapa en connection och kolla så den lyckats
+		if ($dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{
 			$query = "SELECT password,epost,salt1,salt2 FROM projekt.medlem";
 			$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen
