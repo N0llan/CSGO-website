@@ -6,9 +6,9 @@
  * 2016-03-05
  * Filen hanterar funktioner från alla andra filer. Detta för att slippa dubbel kod.
  */
-require_once ('../dbConnection.php');
+require_once ('./dbConnection.php');
 $dbConn = new dbConn;
-$dbConn->test();
+
 date_default_timezone_set("Europe/Stockholm");	//Sätter timezone
 //SKapat et klass för att hålla alla funktioner
 class FunktionClass{	
@@ -28,8 +28,8 @@ class FunktionClass{
 		$count = 0;
 		if ($dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{
-			$query = "SELECT password,epost,salt1,salt2 FROM projekt.medlem";
-			$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen
+			$query = "SELECT password,epost,salt1,salt2 FROM csgo.medlem";
+			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				while ($row = pg_fetch_row($result, $count))
@@ -44,7 +44,7 @@ class FunktionClass{
 							$count = 0;
 							setcookie("loggedin", "TRUE");	//sätter cookien till TRUE då man nu är inloggad
 							$query = "SELECT nick,epost,admin FROM projekt.medlem";
-							$result = pg_query($dbconn,$query);	//Ny fråga
+							$result = $dbConn->queryDB($query);	//Ny fråga
 							if ($result)
 							{
 								while($row = pg_fetch_row($result, $count))
@@ -56,7 +56,7 @@ class FunktionClass{
 										pg_free_result($result);	//rensa
 									}
 									$count++;
-									pg_close();		//Stänger anslutning till databasen
+									$dbConn->disconnectDB();		//Stänger anslutning till databasen
 									header("Refresh:0"); //Refreshar
 								}
 							}		
@@ -66,6 +66,9 @@ class FunktionClass{
 					}
 					$count++;
 				}
+			} else {
+				$dbConn->disconnectDB();
+				echo "Error doing query";
 			}		
 		}
 		else 
@@ -146,18 +149,18 @@ class FunktionClass{
 	
 	public function footer()		//Skriver ut footer
 	{
-		$dbconn = pg_connect('host=webblabb.miun.se port=5432 dbname=daje1400 user=daje1400 password=QPm0nLg0r');
-		if ($dbconn)		//Skapa en connection och kolla så den lyckats
+		
+		if ($dbconn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{
 			$query = "SELECT COUNT(epost) FROM projekt.medlem";	//kolla antalet medlemmar
-			$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen
+			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				$members = pg_fetch_result($result, 0, 0);		//Antalet medlemmar till variabeln members
 			}
 		}
 		pg_free_result($result);
-		pg_close();		//Rensar och stänger
+		$dbConn->disconnectDB();		//Rensar och stänger
 		//Funktion som sätter source på bilden  beroende på antalet
 		if ($members>85)
 		{

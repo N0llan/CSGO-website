@@ -9,19 +9,19 @@ $dbUser = 'postgres';
 class dbConn{
 
 	public function connectDB(){
-		return pg_connect('host=$dbHost port=$dbPort dbname=$dbName user=$dbUser password=$password');
+		$dbConnected=pg_connect('host=$dbHost port=$dbPort dbname=$dbName user=$dbUser password=$password');
+		return $dbConnected;
 	}
 
 	public function disconnectDB(){
-		return pg_close();
+		if ($dbConnected != NULL){
+			return pg_close();
+		}
+		return 0;
 	}
 
 	public function queryDB($query){
-
-	}
-
-	public function test(){
-		echo 'hej vad gör du?';
+		return pg_query($dbConn);
 	}
 
 }
