@@ -161,6 +161,7 @@ class FunktionClass{
 		}
 		pg_free_result($result);
 		$dbConn->disconnectDB();		//Rensar och stänger
+		$members=2;
 		//Funktion som sätter source på bilden  beroende på antalet
 		if ($members>85)
 		{
