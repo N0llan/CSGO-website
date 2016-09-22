@@ -82,7 +82,7 @@ class FunktionClass{
 	{
 		$count = 0;
 		$exist = false;
-		if ($$dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
+		if ($dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{
 			$query = "SELECT epost FROM csgo.medlem";
 			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
