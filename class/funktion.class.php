@@ -43,7 +43,7 @@ class FunktionClass{
 						{
 							$count = 0;
 							setcookie("loggedin", "TRUE");	//sätter cookien till TRUE då man nu är inloggad
-							$query = "SELECT nick,epost,admin FROM projekt.medlem";
+							$query = "SELECT nick,epost,admin FROM csgo.medlem";
 							$result = $dbConn->queryDB($query);	//Ny fråga
 							if ($result)
 							{
@@ -82,11 +82,10 @@ class FunktionClass{
 	{
 		$count = 0;
 		$exist = false;
-		$dbconn = pg_connect('host=webblabb.miun.se port=5432 dbname=daje1400 user=daje1400 password=QPm0nLg0r');
-		if ($dbconn)		//Skapa en connection och kolla så den lyckats
+		if ($$dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{
-			$query = "SELECT epost FROM projekt.medlem";
-			$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen
+			$query = "SELECT epost FROM csgo.medlem";
+			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				while ($row = pg_fetch_row($result, $count))
@@ -104,10 +103,12 @@ class FunktionClass{
 					$salt1 = substr(str_shuffle($chars), 0, 6);	//Skapa 2 salt
 					$salt2 = substr(str_shuffle($chars), 0, 6);
 					$md5_password = md5($salt1.$pass.$salt2);	//HAsha saltet tillsammans med lösenordet för att spara i DB
-					$query = "INSERT INTO projekt.medlem VALUES('$fnamn','$enamn','$nick','$epost','$md5_password',FALSE,'$salt1','$salt2')";
-					$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen
+					$query = "INSERT INTO csgo.medlem VALUES('$fnamn','$enamn','$nick','$epost','$md5_password',FALSE,'$salt1','$salt2')";
+					$result = $dbConn->queryDB($query);//Skapa en SQL fråga och skicka till databasen
 					if ($result)	//Om vi lyckats med frågan
 					{
+						pg_free_result($result);	//rensa
+						$dbConn->disconnectDB();
 						$this->connectDatabase($epost, $pass);	//Loggar in ifall vi lyckats med registreringen
 					}
 				}
@@ -152,7 +153,7 @@ class FunktionClass{
 		
 		if ($dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{
-			$query = "SELECT COUNT(epost) FROM projekt.medlem";	//kolla antalet medlemmar
+			$query = "SELECT COUNT(epost) FROM csgo.medlem";	//kolla antalet medlemmar
 			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
@@ -267,21 +268,20 @@ class FunktionClass{
 
 	public function makeAdmin($epost)	//Funtkion för att ge någon admin rättigheter
 	{
-		$dbconn = pg_connect('host=webblabb.miun.se port=5432 dbname=daje1400 user=daje1400 password=QPm0nLg0r');
-		if ($dbconn)
+		if ($dbconn->connectDB())
 		{
-			$query = "SELECT admin FROM projekt.medlem WHERE UPPER(epost) LIKE UPPER('".$epost."');";
-			$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen
+			$query = "SELECT admin FROM csgo.medlem WHERE UPPER(epost) LIKE UPPER('".$epost."');";
+			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				$row = pg_fetch_row($result, 0);
 				if ($row[0] != "t")	//Om användaren med eposten inte redan är admin
 				{
 					pg_free_result($result);		//Skapa ny fråga och ändra admin boolen
-					$query = "UPDATE projekt.medlem SET admin = NOT admin WHERE UPPER(epost) LIKE UPPER('".$epost."');";
-					$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen	
+					$query = "UPDATE csgo.medlem SET admin = NOT admin WHERE UPPER(epost) LIKE UPPER('".$epost."');";
+					$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen	
 					pg_free_result($result);
-					pg_close();
+					$dbConn->disconnectDB();
 				}
 				else
 				{
@@ -289,7 +289,7 @@ class FunktionClass{
 					echo 'alert("Medlemmen är redan admin!")';
 					echo '</script>';
 					pg_free_result($result);
-					pg_close();	
+					$dbConn->disconnectDB();
 					header("Refresh:0");
 				}
 			}
@@ -299,11 +299,10 @@ class FunktionClass{
 	public function printAdmins()	//Funktion för att skriva ut alla admins för kontakt
 	{
 		$count = 0;
-		$dbconn = pg_connect('host=webblabb.miun.se port=5432 dbname=daje1400 user=daje1400 password=QPm0nLg0r');
-		if ($dbconn)
+		if ($dbconn->connectDB())
 		{
-			$query = "SELECT firstname, lastname, epost FROM projekt.medlem WHERE admin = TRUE;";
-			$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen
+			$query = "SELECT firstname, lastname, epost FROM csgo.medlem WHERE admin = TRUE;";
+			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				echo '<tr><td><b>Förnamn</b></td><td><b>Efternamn</b></td><td><b>E-post</b></td></tr>';
@@ -315,7 +314,7 @@ class FunktionClass{
 				}
 				pg_free_result($result);
 			}
-			pg_close();	
+			$dbConn->disconnectDB();	
 		}
 	}
 	
@@ -333,11 +332,10 @@ class FunktionClass{
 	public function nyhet()			//Funktion för att skriva ut nyheter
 	{
 		$count = 0;
-		$dbconn = pg_connect('host=webblabb.miun.se port=5432 dbname=daje1400 user=daje1400 password=QPm0nLg0r');
-		if ($dbconn)
+		if ($dbconn->connectDB())
 		{
-			$query = "SELECT * FROM projekt.nyhet ORDER BY skriven DESC;";	//Hämta allt från nyhetstabellen
-			$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen
+			$query = "SELECT * FROM csgo.nyhet ORDER BY skriven DESC;";	//Hämta allt från nyhetstabellen
+			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				while ($row = pg_fetch_row($result, $count))
@@ -346,12 +344,10 @@ class FunktionClass{
 					echo '<p>('.$row[2].')</p>';
 					echo '<p>'.$row[1].'</p>';
 					echo '<hr>';
-					
-					
 					$count++;
 				}
 				pg_free_result($result);
-				pg_close();
+				$dbConn->disconnectDB();
 			}
 		}
 	}
@@ -359,11 +355,10 @@ class FunktionClass{
 	public function makeNews($rubrik, $detail)		//Skapa nyhet
 	{
 		$date= date('Y-m-d');
-		$dbconn = pg_connect('host=webblabb.miun.se port=5432 dbname=daje1400 user=daje1400 password=QPm0nLg0r');
-		if ($dbconn)		//Skapa en connection och kolla så den lyckats
+		if ($dbconn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{					//Sätter in rubruk, nhyhet och dagens datum i databasen
-			$query = "INSERT INTO projekt.nyhet VALUES('$rubrik', '$detail', '$date')";
-			$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen
+			$query = "INSERT INTO csgo.nyhet VALUES('$rubrik', '$detail', '$date')";
+			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 		}
 	}
 
