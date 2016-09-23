@@ -7,11 +7,13 @@
  * Filen hanterar funktioner från alla andra filer. Detta för att slippa dubbel kod.
  */
 require_once ('./dbConnection.php');
-$dbConn = new dbConn;
 
 date_default_timezone_set("Europe/Stockholm");	//Sätter timezone
 //SKapat et klass för att hålla alla funktioner
 class FunktionClass{	
+	function __construct(){
+		$this->dbConn = new dbConn();
+	}
 	
 	public function footInfo()
 	{
@@ -26,10 +28,10 @@ class FunktionClass{
 	public function connectDatabase($epost, $password)	//Anslut till databas och kontrollera inmatade värden
 	{
 		$count = 0;
-		if ($dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
+		if ($this->dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{
 			$query = "SELECT password,epost,salt1,salt2 FROM csgo.medlem";
-			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
+			$result = $this->dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				while ($row = pg_fetch_row($result, $count))
@@ -44,7 +46,7 @@ class FunktionClass{
 							$count = 0;
 							setcookie("loggedin", "TRUE");	//sätter cookien till TRUE då man nu är inloggad
 							$query = "SELECT nick,epost,admin FROM csgo.medlem";
-							$result = $dbConn->queryDB($query);	//Ny fråga
+							$result = $this->dbConn->queryDB($query);	//Ny fråga
 							if ($result)
 							{
 								while($row = pg_fetch_row($result, $count))
@@ -56,7 +58,7 @@ class FunktionClass{
 										pg_free_result($result);	//rensa
 									}
 									$count++;
-									$dbConn->disconnectDB();		//Stänger anslutning till databasen
+									$this->dbConn->disconnectDB();		//Stänger anslutning till databasen
 									header("Refresh:0"); //Refreshar
 								}
 							}		
@@ -67,7 +69,7 @@ class FunktionClass{
 					$count++;
 				}
 			} else {
-				$dbConn->disconnectDB();
+				$this->dbConn->disconnectDB();
 				echo "Error doing query";
 			}		
 		}
@@ -82,10 +84,10 @@ class FunktionClass{
 	{
 		$count = 0;
 		$exist = false;
-		if ($dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
+		if ($this->dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{
 			$query = "SELECT epost FROM csgo.medlem";
-			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
+			$result = $this->dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				while ($row = pg_fetch_row($result, $count))
@@ -104,11 +106,11 @@ class FunktionClass{
 					$salt2 = substr(str_shuffle($chars), 0, 6);
 					$md5_password = md5($salt1.$pass.$salt2);	//HAsha saltet tillsammans med lösenordet för att spara i DB
 					$query = "INSERT INTO csgo.medlem VALUES('$fnamn','$enamn','$nick','$epost','$md5_password',FALSE,'$salt1','$salt2')";
-					$result = $dbConn->queryDB($query);//Skapa en SQL fråga och skicka till databasen
+					$result = $this->dbConn->queryDB($query);//Skapa en SQL fråga och skicka till databasen
 					if ($result)	//Om vi lyckats med frågan
 					{
 						pg_free_result($result);	//rensa
-						$dbConn->disconnectDB();
+						$this->dbConn->disconnectDB();
 						$this->connectDatabase($epost, $pass);	//Loggar in ifall vi lyckats med registreringen
 					}
 				}
@@ -151,17 +153,17 @@ class FunktionClass{
 	public function footer()		//Skriver ut footer
 	{
 		
-		if ($dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
+		if ($this->dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{
 			$query = "SELECT COUNT(epost) FROM csgo.medlem";	//kolla antalet medlemmar
-			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
+			$result = $this->dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				$members = pg_fetch_result($result, 0, 0);		//Antalet medlemmar till variabeln members
 			}
 		}
 		pg_free_result($result);
-		$dbConn->disconnectDB();		//Rensar och stänger
+		$this->dbConn->disconnectDB();		//Rensar och stänger
 		//Funktion som sätter source på bilden  beroende på antalet
 		if ($members>85)
 		{
@@ -268,10 +270,10 @@ class FunktionClass{
 
 	public function makeAdmin($epost)	//Funtkion för att ge någon admin rättigheter
 	{
-		if ($dbconn->connectDB())
+		if ($this->dbConn->connectDB())
 		{
 			$query = "SELECT admin FROM csgo.medlem WHERE UPPER(epost) LIKE UPPER('".$epost."');";
-			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
+			$result = $this->dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				$row = pg_fetch_row($result, 0);
@@ -279,9 +281,9 @@ class FunktionClass{
 				{
 					pg_free_result($result);		//Skapa ny fråga och ändra admin boolen
 					$query = "UPDATE csgo.medlem SET admin = NOT admin WHERE UPPER(epost) LIKE UPPER('".$epost."');";
-					$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen	
+					$result = $this->dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen	
 					pg_free_result($result);
-					$dbConn->disconnectDB();
+					$this->dbConn->disconnectDB();
 				}
 				else
 				{
@@ -289,7 +291,7 @@ class FunktionClass{
 					echo 'alert("Medlemmen är redan admin!")';
 					echo '</script>';
 					pg_free_result($result);
-					$dbConn->disconnectDB();
+					$this->dbConn->disconnectDB();
 					header("Refresh:0");
 				}
 			}
@@ -299,10 +301,10 @@ class FunktionClass{
 	public function printAdmins()	//Funktion för att skriva ut alla admins för kontakt
 	{
 		$count = 0;
-		if ($dbconn->connectDB())
+		if ($this->dbConn->connectDB())
 		{
 			$query = "SELECT firstname, lastname, epost FROM csgo.medlem WHERE admin = TRUE;";
-			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
+			$result = $this->dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				echo '<tr><td><b>Förnamn</b></td><td><b>Efternamn</b></td><td><b>E-post</b></td></tr>';
@@ -314,7 +316,7 @@ class FunktionClass{
 				}
 				pg_free_result($result);
 			}
-			$dbConn->disconnectDB();	
+			$this->dbConn->disconnectDB();	
 		}
 	}
 	
@@ -332,10 +334,10 @@ class FunktionClass{
 	public function nyhet()			//Funktion för att skriva ut nyheter
 	{
 		$count = 0;
-		if ($dbconn->connectDB())
+		if ($this->dbConn->connectDB())
 		{
 			$query = "SELECT * FROM csgo.nyhet ORDER BY skriven DESC;";	//Hämta allt från nyhetstabellen
-			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
+			$result = $this->dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 			if ($result)	//Om vi lyckats med frågan
 			{
 				while ($row = pg_fetch_row($result, $count))
@@ -347,7 +349,7 @@ class FunktionClass{
 					$count++;
 				}
 				pg_free_result($result);
-				$dbConn->disconnectDB();
+				$this->dbConn->disconnectDB();
 			}
 		}
 	}
@@ -355,10 +357,10 @@ class FunktionClass{
 	public function makeNews($rubrik, $detail)		//Skapa nyhet
 	{
 		$date= date('Y-m-d');
-		if ($dbconn->connectDB())		//Skapa en connection och kolla så den lyckats
+		if ($this->dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 		{					//Sätter in rubruk, nhyhet och dagens datum i databasen
 			$query = "INSERT INTO csgo.nyhet VALUES('$rubrik', '$detail', '$date')";
-			$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
+			$result = $this->dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 		}
 	}
 

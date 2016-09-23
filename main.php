@@ -7,13 +7,13 @@ matat in
 Programvaruteknik 2014
 2016-01-24
 Webbprogrammering DT058G*/
-
+require_once ('dbConnection.php');
 $count = 0;
-$dbconn = pg_connect('host=webblabb.miun.se port=5432 dbname=daje1400 user=daje1400 password=QPm0nLg0r');
-if ($dbconn)		//Skapa en connection och kolla så den lyckats
+$dbConn = new dbConn();
+if ($dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 {
-	$query = "SELECT epost FROM projekt.medlem";
-	$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen
+	$query = "SELECT epost FROM csgo.medlem";
+	$result = $this->dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 	if ($result)	//Om vi lyckats med frågan
 	{
 		while ($row = pg_fetch_row($result, $count))
@@ -50,5 +50,5 @@ else
 {
 	echo $suggested;				//Annars skriver vi ut de namn vi hittat
 }
-
+$dbConn->disconnectDB();
 ?>

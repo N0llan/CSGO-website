@@ -1,5 +1,6 @@
 <?php
-require_once ('class/MyList.class.php');
+require_once ('MyList.class.php');
+require_once ('./dbConnection.php');
 /**
  * Daniel Jennebo
  * Programvaruteknik 2014
@@ -8,9 +9,8 @@ require_once ('class/MyList.class.php');
  * Filen skapar klassen namnlist. Hanterar inläsning från databas och utskrift till html
  */
     class namnlist{
-    	public $sorta;		//Medlemsvariabler
+    	public $sorta;
 		public $lista;
-		
 		
 		public function printSort()
 		{
@@ -58,28 +58,28 @@ require_once ('class/MyList.class.php');
 		}
 		public function createList()
 		{
+			$dbConn = new dbConn;
 			$count = 0;
-			$dbconn = pg_connect('host=webblabb.miun.se port=5432 dbname=daje1400 user=daje1400 password=QPm0nLg0r');
-			if ($dbconn)		//Skapa en connection och kolla så den lyckats
+			if ($dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 			{
 				if ($this->sorta == 'FÖRNAMN')
 				{						//Skapar en query beroende på vilken sort vi vill ha
-					$query = "SELECT firstname,lastname,nick,epost,admin FROM projekt.medlem ORDER BY firstname ASC;";
+					$query = "SELECT firstname,lastname,nick,epost,admin FROM csgo.medlem ORDER BY firstname ASC;";
 				}
 				elseif ($this->sorta == 'NICK')
 				{
-					$query = "SELECT firstname,lastname,nick,epost,admin FROM projekt.medlem ORDER BY nick ASC;";
+					$query = "SELECT firstname,lastname,nick,epost,admin FROM csgo.medlem ORDER BY nick ASC;";
 				}
 				elseif ($this->sorta == 'EFTERNAMN')
 				{
 
-					$query = "SELECT firstname,lastname,nick,epost,admin FROM projekt.medlem ORDER BY lastname ASC;";
+					$query = "SELECT firstname,lastname,nick,epost,admin FROM csgo.medlem ORDER BY lastname ASC;";
 				}
 				elseif ($this->sorta == 'EPOST')
 				{
-					$query = "SELECT firstname,lastname,nick,epost,admin FROM projekt.medlem ORDER BY epost ASC;";
+					$query = "SELECT firstname,lastname,nick,epost,admin FROM csgo.medlem ORDER BY epost ASC;";
 				}
-				$result = pg_query($dbconn,$query);	//Skapa en SQL fråga och skicka till databasen
+				$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 				if ($result)	//Om vi lyckats med frågan
 				{
 					while ($row = pg_fetch_row($result, $count))
@@ -94,7 +94,7 @@ require_once ('class/MyList.class.php');
 			{
 				echo "Connection failed";
 			}
-			pg_close();		//Stänger anslutning till databasen
+			$dbConn->disconnectDB();
 			
 		}
 				
