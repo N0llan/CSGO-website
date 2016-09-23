@@ -3,15 +3,18 @@ require_once ('dbPassword.php');
 
 $dbName = 'postgres';
 $dbPort = '5432';
-$dbHost = '192.168.0.106';
+$dbHost = '127.0.0.1';
 $dbUser = 'postgres';
 
 class dbConn{
 
 	public function connectDB(){
-		$dbConnected=pg_connect('host=$dbHost port=$dbPort dbname=$dbName user=$dbUser password=$password');
-		echo "$dbConnected";
-		return $dbConnected;
+		$dbConnected=pg_connect("host=$dbHost port=$dbPort dbname=$dbName user=$dbUser password=$password");
+		if ($dbConnected != NULL){
+			return true;
+		} else {
+			echo 'Vad händer';
+		}
 	}
 
 	public function disconnectDB(){
@@ -26,7 +29,5 @@ class dbConn{
 	}
 
 }
-
-
 
 ?>

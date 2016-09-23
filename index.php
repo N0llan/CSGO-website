@@ -16,7 +16,6 @@ if(isset($_POST['login']))				//Kontrollerar vilken man klickat på
 	$fk->connectDatabase($_POST['epost'],$_POST['password']);
 	header("Location:login.php");
 }
-
 if(isset($_POST['kontakt']))
 {
 	header("Location:kontakt.php");
