@@ -13,7 +13,7 @@ $dbConn = new dbConn();
 if ($dbConn->connectDB())		//Skapa en connection och kolla så den lyckats
 {
 	$query = "SELECT epost FROM csgo.medlem";
-	$result = $this->dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
+	$result = $dbConn->queryDB($query);	//Skapa en SQL fråga och skicka till databasen
 	if ($result)	//Om vi lyckats med frågan
 	{
 		while ($row = pg_fetch_row($result, $count))
