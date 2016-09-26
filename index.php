@@ -36,6 +36,11 @@ elseif(isset($_POST['forum']))
 {
 	header("Location:forum.php");
 }
+if ((isset($_COOKIE["loggedin"])) && ($_COOKIE["loggedin"] == "TRUE"))	//Om man är inloggad 
+{
+	header("Location:login.php");
+}
+
 
 
 ?>
